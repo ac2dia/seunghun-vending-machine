@@ -1,0 +1,56 @@
+@startuml
+actor User
+
+participant "VendingMachine" as VM
+participant "payment.CashPayment" as CP
+participant "payment.CardPayment" as CRP
+participant "model.Beverage" as Bev
+
+alt Cash payment.Payment Scenario
+    User -> VM: selectPaymentMethod(payment.CashPayment)
+    VM -> CP: activate payment.CashPayment method
+    note right of CP: payment.CashPayment selected
+
+    User -> VM: insertMoney(model.Money(1000, 1))
+    VM -> CP: insertCash(model.Money(1000, 1))
+    note right of CP: 1000원 투입
+    User -> VM: insertMoney(model.Money(100, 1))
+    VM -> CP: insertCash(model.Money(100, 1))
+    note right of CP: 100원 투입
+
+    User -> VM: selectBeverage("콜라")
+    VM -> Bev: find("콜라")
+    Bev --> VM: model.Beverage("콜라", price=1100, stock>0)
+
+    VM -> CP: processPayment(1100)
+    CP --> VM: payment.Payment success
+
+    VM -> Bev: dispense()
+    Bev -> Bev: reduceStock()
+    Bev --> VM: Dispensed
+
+    VM -> CP: refundChange()
+    CP --> VM: change returned (0원)
+
+    VM -> User: display "Enjoy your 콜라!"
+end
+
+alt Card payment.Payment Scenario
+    User -> VM: selectPaymentMethod(payment.CardPayment)
+    VM -> CRP: activate payment.CardPayment method
+    note right of CRP: payment.CardPayment selected
+
+    User -> VM: selectBeverage("커피")
+    VM -> Bev: find("커피")
+    Bev --> VM: model.Beverage("커피", price=700, stock>0)
+
+    VM -> CRP: processPayment(700)
+    CRP --> VM: payment.Payment success (card balance updated)
+
+    VM -> Bev: dispense()
+    Bev -> Bev: reduceStock()
+    Bev --> VM: Dispensed
+
+    VM -> User: display "Enjoy your 커피!"
+end
+@enduml

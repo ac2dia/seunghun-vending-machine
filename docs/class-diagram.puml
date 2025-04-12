@@ -1,0 +1,58 @@
+@startuml
+' payment.Payment 추상 클래스 선언
+abstract class payment.Payment {
+    - amount : Int
+    + processPayment(price: Int) : Boolean
+}
+
+' payment.CashPayment 클래스 (payment.Payment 상속)
+class payment.CashPayment {
+    - cashInserted : List<model.Money>
+    + insertCash(money: model.Money) : void
+    + processPayment(price: Int) : Boolean
+}
+
+' payment.CardPayment 클래스 (payment.Payment 상속)
+class payment.CardPayment {
+    - cardNumber : String
+    - cardBalance : Int
+    + processPayment(price: Int) : Boolean
+}
+
+' model.Money 클래스
+class model.Money {
+    - denomination : Int
+    - count : Int
+    + getTotal() : Int
+}
+
+' model.Beverage 클래스
+class model.Beverage {
+    - name : String
+    - price : Int
+    - stock : Int
+    + dispense() : void
+    + reduceStock() : void
+}
+
+' VendingMachine 클래스
+class VendingMachine {
+    - beverages : List<model.Beverage>
+    - payment : payment.Payment?
+    + selectPaymentMethod(payment: payment.Payment) : void
+    + insertMoney(money: model.Money) : void
+    + selectBeverage(name: String) : model.Beverage?
+    + dispenseBeverage(beverage: model.Beverage) : void
+    + refundChange(beverage: model.Beverage) : void
+    + refillBeverage(name: String, amount: Int) : void
+}
+
+' 상속 관계
+payment.Payment <|-- payment.CashPayment
+payment.Payment <|-- payment.CardPayment
+
+' 연관 관계
+VendingMachine "1" *-- "*" model.Beverage : contains
+VendingMachine "1" o-- "1" payment.Payment : uses
+payment.CashPayment "1" *-- "0..n" model.Money : "inserts"
+@enduml
